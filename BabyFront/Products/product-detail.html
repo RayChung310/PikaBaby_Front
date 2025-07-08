@@ -1202,10 +1202,42 @@
         function toggleWishlist(button) {
             button.classList.toggle('active');
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
             if (button.classList.contains('active')) {
+                // 加入收藏
+                fetch('http://localhost:8080/customers/front/favorites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ productId: parseInt(productId) })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('請先登入或稍後再試');
+                    return res.text();
+                })
+                .catch(err => {
+                    // 失敗還原
+                    btn.classList.remove('active');
+                    // showMessage(err.message || '加入收藏失敗', 'error');
+                });
                 button.innerHTML = '♥';
                 showCustomAlert('已加入願望清單', 'success', '已加入願望清單');
             } else {
+                // 取消收藏
+                fetch(`http://localhost:8080/customers/front/favorites/${productId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('請先登入或稍後再試');
+                    return res.text();
+                })
+                .catch(err => {
+                    // 失敗還原
+                    btn.classList.add('active');
+                    // showMessage(err.message || '移除收藏失敗', 'error');
+                });
                 button.innerHTML = '♡';
                 showCustomAlert('已從願望清單移除', 'info', '已從願望清單移除');
             }
